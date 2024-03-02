@@ -1,6 +1,6 @@
 # SSG - Login page tests
 
-## POM object
+### POM object
 - **pages** folder
 
 In this folder, we place files with pages, ideally organized by either the page name or its URL.
@@ -19,7 +19,7 @@ In this folder, we can store any necessary test data. In our case, for example, 
 
 Here we have all our spec files with tests
 
-## tests for the login functionality
+### Tests suits for the login page functionality
 - test positive scenario with correct username and password + logout
 - test with empty username and password fields
 - tests with correct password but incorrect username
