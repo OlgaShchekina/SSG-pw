@@ -1,59 +1,48 @@
 import { test, expect } from '@playwright/test';
-import { LoginPage } from '../page-objects/loginPage';
+import { LoginPage } from '../pages/loginPage';
+import { SecurePage } from '../pages/securePage';
+import { user } from '../testData/userData'
 
 test.describe('Login Functionality Tests', () => {
-    let login: LoginPage
+    let loginPage: LoginPage
 
-    test.beforeEach('open the login page', async ({page}) => {
-        login = new LoginPage(page);
-        await login.goto()
+    test.beforeEach('open the login page', async ({ page}) => {
+        loginPage = new LoginPage(page);
+        await loginPage.open()
     })
 
-    test('Successful login and logout with valid credentials', async ({page}) => {
-        // login
-        await login.fillUsernameField('practice')
-        await login.fillPasswordField('SuperSecretPassword!')
-        await login.submitLoginForm()
+    test('Successful login and logout with valid credentials', async ({ page}) => {
+        const securePage = new SecurePage(page)
 
-        await login.loginResultMessage('You logged into a secure area!')
+        // login
+        await loginPage.login(user.username, user.password)
+        expect(securePage.sucessfullLoginMessage('You logged into a secure area!')).toBeTruthy()
 
         // logout
-        const logout = page.getByRole('link', {name: 'Logout'})
-        await logout.click()
-
-        await login.loginResultMessage('You logged out of the secure area!')
-        await expect(page.getByRole('heading', { name: 'Login Page' })).toBeVisible();
+        await securePage.logout()
+        expect(loginPage.pageHeader()).toBeTruthy()
     })
 
-    test('Error message with empty credentials', async ({page}) => {
-        await login.fillUsernameField('')
-        await login.fillPasswordField('')
-        await login.submitLoginForm()
-
-        await login.loginResultMessage('Your username is invalid!')
+    test('Error message with empty credentials', async () => {
+        await loginPage.login('', '')
+        await loginPage.loginErrorMessage('Your username is invalid!')
     })
 
-    test('Error message with invalid username', async ({page}) => {
+    test('Error message with invalid username', async () => {
         const invalidUsernames = ['', 'test', 'Practice']
 
         for (const el of invalidUsernames) {
-            await login.fillUsernameField(el)
-            await login.fillPasswordField('SuperSecretPassword!')
-            await login.submitLoginForm()
-
-            await login.loginResultMessage('Your username is invalid!')
+            await loginPage.login(el, 'SuperSecretPassword!')
+            await loginPage.loginErrorMessage('Your username is invalid!')
         }
     })
 
-    test('Error message with invalid password', async ({page}) => {
+    test('Error message with invalid password', async () => {
         const invalidPasswords = ['', 'test', 'supersecretpassword!']
 
         for (const el of invalidPasswords) {
-            await login.fillUsernameField('practice')
-            await login.fillPasswordField(el)
-            await login.submitLoginForm()
-
-            await login.loginResultMessage('Your password is invalid!')
+            await loginPage.login('practice', el)
+            await loginPage.loginErrorMessage('Your password is invalid!')
         }
     })
 })
